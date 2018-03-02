@@ -13,16 +13,16 @@ func TestInMemStore(t *testing.T) {
 	st := NewInMemStore()
 	defer st.Close()
 
-	eq(nil, st.Get("asdf"))
+	eq(nil, st.Load("asdf"))
 
 	s := NewSession()
-	st.Add(s)
+	st.Save(s)
 	time.Sleep(10 * time.Millisecond)
-	eq(s, st.Get(s.ID()))
+	eq(s, st.Load(s.ID()))
 	neq(s.Accessed(), s.Created())
 
 	st.Remove(s)
-	eq(nil, st.Get(s.ID()))
+	eq(nil, st.Load(s.ID()))
 }
 
 func TestInMemStoreSessCleaner(t *testing.T) {
@@ -32,12 +32,12 @@ func TestInMemStoreSessCleaner(t *testing.T) {
 	defer st.Close()
 
 	s := NewSessionOptions(&SessOptions{Timeout: 50 * time.Millisecond})
-	st.Add(s)
-	eq(s, st.Get(s.ID()))
+	st.Save(s)
+	eq(s, st.Load(s.ID()))
 
 	time.Sleep(30 * time.Millisecond)
-	eq(s, st.Get(s.ID()))
+	eq(s, st.Load(s.ID()))
 
 	time.Sleep(80 * time.Millisecond)
-	eq(nil, st.Get(s.ID()))
+	eq(nil, st.Load(s.ID()))
 }

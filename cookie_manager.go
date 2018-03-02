@@ -72,18 +72,18 @@ func NewCookieManagerOptions(store Store, o *CookieMngrOptions) Manager {
 	return m
 }
 
-// Get is to implement Manager.Get().
-func (m *CookieManager) Get(r *http.Request) Session {
+// Load is to implement Manager.Load().
+func (m *CookieManager) Load(r *http.Request) Session {
 	c, err := r.Cookie(m.sessIDCookieName)
 	if err != nil {
 		return nil
 	}
 
-	return m.store.Get(c.Value)
+	return m.store.Load(c.Value)
 }
 
-// Add is to implement Manager.Add().
-func (m *CookieManager) Add(sess Session, w http.ResponseWriter) {
+// Save is to implement Manager.Save().
+func (m *CookieManager) Save(sess Session, w http.ResponseWriter) {
 	// HttpOnly: do not allow non-HTTP access to it (like javascript) to prevent stealing it...
 	// Secure: only send it over HTTPS
 	// MaxAge: to specify the max age of the cookie in seconds, else it's a session cookie and gets deleted after the browser is closed.
@@ -98,7 +98,7 @@ func (m *CookieManager) Add(sess Session, w http.ResponseWriter) {
 	}
 	http.SetCookie(w, &c)
 
-	m.store.Add(sess)
+	m.store.Save(sess)
 }
 
 // Remove is to implement Manager.Remove().

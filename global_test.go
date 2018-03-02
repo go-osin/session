@@ -12,14 +12,14 @@ import (
 )
 
 func globalHandler(w http.ResponseWriter, r *http.Request) {
-	if sess := Get(r); sess == nil {
+	if sess := Load(r); sess == nil {
 		sess = NewSession()
-		sess.SetAttr("counter", 1)
-		Add(sess, w)
+		sess.Set("counter", 1)
+		Save(sess, w)
 		w.Header().Set("test", "0")
 	} else {
-		if sess.Attr("counter") == 1 {
-			sess.SetAttr("counter", 2)
+		if sess.Get("counter") == 1 {
+			sess.Set("counter", 2)
 			w.Header().Set("test", "1")
 		} else {
 			Remove(sess, w)

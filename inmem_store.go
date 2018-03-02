@@ -107,8 +107,8 @@ func (s *inMemStore) sessCleaner(interval time.Duration) {
 	}
 }
 
-// Get is to implement Store.Get().
-func (s *inMemStore) Get(id string) Session {
+// Load is to implement Store.Load().
+func (s *inMemStore) Load(id string) Session {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -121,8 +121,8 @@ func (s *inMemStore) Get(id string) Session {
 	return sess
 }
 
-// Add is to implement Store.Add().
-func (s *inMemStore) Add(sess Session) {
+// Save is to implement Store.Save().
+func (s *inMemStore) Save(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 

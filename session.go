@@ -24,24 +24,24 @@ type Session interface {
 	// Implementation is based on whether created and access times are equal.
 	New() bool
 
-	// CAttr returns the value of an attribute provided at session creation.
+	// Getp returns the value of an attribute provided at session creation.
 	// These attributes cannot be changes during the lifetime of a session,
 	// so they can be accessed safely without synchronization. Exampe is storing the
 	// authenticated user.
-	CAttr(name string) interface{}
+	Getp(name string) interface{}
 
-	// Attr returns the value of an attribute stored in the session.
+	// Get returns the value of an attribute stored in the session.
 	// Safe for concurrent use.
-	Attr(name string) interface{}
+	Get(name string) interface{}
 
-	// SetAttr sets the value of an attribute stored in the session.
+	// Set sets the value of an attribute stored in the session.
 	// Pass the nil value to delete the attribute.
 	// Safe for concurrent use.
-	SetAttr(name string, value interface{})
+	Set(name string, value interface{})
 
-	// Attrs returns a copy of all the attribute values stored in the session.
+	// Values returns a copy of all the attribute values stored in the session.
 	// Safe for concurrent use.
-	Attrs() map[string]interface{}
+	Values() map[string]interface{}
 
 	// Created returns the session creation time.
 	Created() time.Time
@@ -162,21 +162,21 @@ func (s *sessionImpl) New() bool {
 	return s.CreatedF == s.AccessedF
 }
 
-// CAttr is to implement Session.CAttr().
-func (s *sessionImpl) CAttr(name string) interface{} {
+// Getp is to implement Session.Getp().
+func (s *sessionImpl) Getp(name string) interface{} {
 	return s.CAttrsF[name]
 }
 
-// Attr is to implement Session.Attr().
-func (s *sessionImpl) Attr(name string) interface{} {
+// Get is to implement Session.Get().
+func (s *sessionImpl) Get(name string) interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
 	return s.AttrsF[name]
 }
 
-// SetAttr is to implement Session.SetAttr().
-func (s *sessionImpl) SetAttr(name string, value interface{}) {
+// Set is to implement Session.Set().
+func (s *sessionImpl) Set(name string, value interface{}) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -187,8 +187,8 @@ func (s *sessionImpl) SetAttr(name string, value interface{}) {
 	}
 }
 
-// Attrs is to implement Session.Attrs().
-func (s *sessionImpl) Attrs() map[string]interface{} {
+// Values is to implement Session.Values().
+func (s *sessionImpl) Values() map[string]interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 

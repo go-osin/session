@@ -16,7 +16,7 @@ func TestNewSession(t *testing.T) {
 	for _, s := range ss {
 		eq(true, s.New())
 		eq(s.Accessed(), s.Created())
-		eq(0, len(s.Attrs()))
+		eq(0, len(s.Values()))
 		neq(nil, s.Mutex())
 
 		time.Sleep(10 * time.Millisecond)
@@ -29,14 +29,14 @@ func TestSessionAttrs(t *testing.T) {
 	eq := mighty.Eq(t)
 	s := NewSession()
 
-	eq(nil, s.Attr("a"))
-	s.SetAttr("a", 1)
-	eq(1, s.Attr("a"))
-	eq(1, len(s.Attrs()))
+	eq(nil, s.Get("a"))
+	s.Set("a", 1)
+	eq(1, s.Get("a"))
+	eq(1, len(s.Values()))
 
-	s.SetAttr("a", nil)
-	eq(nil, s.Attr("a"))
-	eq(0, len(s.Attrs()))
+	s.Set("a", nil)
+	eq(nil, s.Get("a"))
+	eq(0, len(s.Values()))
 }
 
 func TestSessOptions(t *testing.T) {
@@ -51,10 +51,10 @@ func TestSessOptions(t *testing.T) {
 
 	s := NewSessionOptions(so)
 
-	eq(true, reflect.DeepEqual(s.Attrs(), so.Attrs))
+	eq(true, reflect.DeepEqual(s.Values(), so.Attrs))
 
 	for k, v := range so.CAttrs {
-		eq(v, s.CAttr(k))
+		eq(v, s.Getp(k))
 	}
 
 	data, err := base64.URLEncoding.DecodeString(s.ID())

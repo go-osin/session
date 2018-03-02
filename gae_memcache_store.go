@@ -33,11 +33,11 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/memcache"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/memcache"
 )
 
 // A Google App Engine Memcache session store implementation.
@@ -146,11 +146,11 @@ func NewMemcacheStoreOptions(ctx context.Context, o *MemcacheStoreOptions) Store
 	return s
 }
 
-// Get is to implement Store.Get().
+// Load is to implement Store.Load().
 // Important! Since sessions are marshalled and stored in the Memcache,
 // the mutex of the Session (Session.RWMutex()) will be different for each
 // Session value (even though they might have the same session id)!
-func (s *memcacheStore) Get(id string) Session {
+func (s *memcacheStore) Load(id string) Session {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -221,8 +221,8 @@ func (s *memcacheStore) Get(id string) Session {
 	return sess
 }
 
-// Add is to implement Store.Add().
-func (s *memcacheStore) Add(sess Session) {
+// Save is to implement Store.Save().
+func (s *memcacheStore) Save(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
