@@ -185,6 +185,7 @@ func (s *sessionImpl) Set(name string, value interface{}) {
 	} else {
 		s.AttrsF[name] = value
 	}
+	s.AccessedF = time.Now() // force set for auto save in middleware
 }
 
 // Values is to implement Session.Values().
