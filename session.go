@@ -66,6 +66,9 @@ type Session interface {
 	// updates its last accessed time to the current time.
 	// Users do not need to call this as the session store is responsible for that.
 	Access()
+
+	// Changed return true if the session is Changed.
+	Changed() bool
 }
 
 // Session implementation.
@@ -78,6 +81,7 @@ type sessionImpl struct {
 	AttrsF    map[string]interface{} // Attributes stored in the session
 	TimeoutF  time.Duration          // Session timeout
 	mux       *sync.RWMutex          // RW mutex to synchronize session state access
+	changedF  bool
 }
 
 // SessOptions defines options that may be passed when creating a new Session.
@@ -162,6 +166,11 @@ func (s *sessionImpl) New() bool {
 	return s.CreatedF == s.AccessedF
 }
 
+// Changed is to implement Session.Changed().
+func (s *sessionImpl) Changed() bool {
+	return s.changedF
+}
+
 // Getp is to implement Session.Getp().
 func (s *sessionImpl) Getp(name string) interface{} {
 	return s.CAttrsF[name]
@@ -185,7 +194,7 @@ func (s *sessionImpl) Set(name string, value interface{}) {
 	} else {
 		s.AttrsF[name] = value
 	}
-	s.AccessedF = time.Now() // force set for auto save in middleware
+	s.changedF = true
 }
 
 // Values is to implement Session.Values().

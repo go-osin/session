@@ -25,14 +25,23 @@ func Middleware(mgr Manager, sf sessionFunc) func(next http.Handler) http.Handle
 				sess = sf()
 			}
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, SessionKey, sess)
+			ctx = ContextWithSession(ctx, sess)
+			defer func() {
+				if sess, ok := FromContext(r.Context()); ok {
+					if sess.Changed() {
+						mgr.Save(sess, w)
+					}
+				}
+			}()
 			next.ServeHTTP(w, r.WithContext(ctx))
-			if !sess.New() {
-				mgr.Save(sess, w)
-			}
 		}
 		return http.HandlerFunc(fn)
 	}
+}
+
+// ContextWithSession returns a new Context that carries value Session.
+func ContextWithSession(ctx context.Context, sess Session) context.Context {
+	return context.WithValue(ctx, SessionKey, sess)
 }
 
 // FromContext return Session in a request context
