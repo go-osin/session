@@ -23,7 +23,9 @@ type redicacheStore struct {
 }
 
 type RedicacheStoreOptions struct {
-	Servers   []string
+	Addrs     []string
+	DB        int
+	Password  string
 	KeyPrefix string
 	Retries   int
 	Codec     *Codec
@@ -36,16 +38,20 @@ func NewRedicacheStore() session.Store {
 }
 
 func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
-	if len(o.Servers) == 0 {
-		o.Servers = []string{":6379"}
+	if len(o.Addrs) == 0 {
+		o.Addrs = []string{":6379"}
+	} else {
+		log.Printf("redis addrs %v", o.Addrs)
 	}
 	var addrs = map[string]string{}
-	for i, svr := range o.Servers {
+	for i, svr := range o.Addrs {
 		k := fmt.Sprintf("server%d", i)
 		addrs[k] = svr
 	}
 	ring := redis.NewRing(&redis.RingOptions{
-		Addrs: addrs,
+		Addrs:    addrs,
+		DB:       o.DB,
+		Password: o.Password,
 	})
 	var cd Codec
 	if o.Codec == nil {
