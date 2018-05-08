@@ -126,7 +126,7 @@ func (s *inMemStore) Save(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	log.Println("Session added:", sess.ID())
+	log.Println("Session inmem added:", sess.ID())
 	s.sessions[sess.ID()] = sess
 }
 
@@ -135,7 +135,7 @@ func (s *inMemStore) Remove(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	log.Println("Session removed:", sess.ID())
+	log.Println("Session inmem removed:", sess.ID())
 	delete(s.sessions, sess.ID())
 }
 

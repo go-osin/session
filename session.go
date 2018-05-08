@@ -73,7 +73,7 @@ type Session interface {
 
 // Session implementation.
 // Fields are exported so a session may be marshalled / unmarshalled.
-type sessionImpl struct {
+type SessionImpl struct {
 	IDF       string                 // ID of the session
 	CreatedF  time.Time              // Creation time
 	AccessedF time.Time              // Last accessed time
@@ -126,7 +126,7 @@ func NewSessionOptions(o *SessOptions) Session {
 		timeout = 30 * time.Minute
 	}
 
-	sess := sessionImpl{
+	sess := SessionImpl{
 		IDF:       genID(idLength),
 		CreatedF:  now,
 		AccessedF: now,
@@ -157,27 +157,27 @@ func genID(length int) string {
 }
 
 // ID is to implement Session.ID().
-func (s *sessionImpl) ID() string {
+func (s *SessionImpl) ID() string {
 	return s.IDF
 }
 
 // New is to implement Session.New().
-func (s *sessionImpl) New() bool {
+func (s *SessionImpl) New() bool {
 	return s.CreatedF == s.AccessedF
 }
 
 // Changed is to implement Session.Changed().
-func (s *sessionImpl) Changed() bool {
+func (s *SessionImpl) Changed() bool {
 	return s.changedF
 }
 
 // Getp is to implement Session.Getp().
-func (s *sessionImpl) Getp(name string) interface{} {
+func (s *SessionImpl) Getp(name string) interface{} {
 	return s.CAttrsF[name]
 }
 
 // Get is to implement Session.Get().
-func (s *sessionImpl) Get(name string) interface{} {
+func (s *SessionImpl) Get(name string) interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -185,7 +185,7 @@ func (s *sessionImpl) Get(name string) interface{} {
 }
 
 // Set is to implement Session.Set().
-func (s *sessionImpl) Set(name string, value interface{}) {
+func (s *SessionImpl) Set(name string, value interface{}) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -198,7 +198,7 @@ func (s *sessionImpl) Set(name string, value interface{}) {
 }
 
 // Values is to implement Session.Values().
-func (s *sessionImpl) Values() map[string]interface{} {
+func (s *SessionImpl) Values() map[string]interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -210,12 +210,12 @@ func (s *sessionImpl) Values() map[string]interface{} {
 }
 
 // Created is to implement Session.Created().
-func (s *sessionImpl) Created() time.Time {
+func (s *SessionImpl) Created() time.Time {
 	return s.CreatedF
 }
 
 // Accessed is to implement Session.Accessed().
-func (s *sessionImpl) Accessed() time.Time {
+func (s *SessionImpl) Accessed() time.Time {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -223,17 +223,17 @@ func (s *sessionImpl) Accessed() time.Time {
 }
 
 // Timeout is to implement Session.Timeout().
-func (s *sessionImpl) Timeout() time.Duration {
+func (s *SessionImpl) Timeout() time.Duration {
 	return s.TimeoutF
 }
 
 // Mutex is to implement Session.Mutex().
-func (s *sessionImpl) Mutex() *sync.RWMutex {
+func (s *SessionImpl) Mutex() *sync.RWMutex {
 	return s.mux
 }
 
 // Access is to implement Session.Access().
-func (s *sessionImpl) Access() {
+func (s *SessionImpl) Access() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
