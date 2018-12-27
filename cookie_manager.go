@@ -60,9 +60,7 @@ func NewCookieManagerOptions(store Store, o *CookieMngrOptions) Manager {
 	if m.sessIDCookieName == "" {
 		m.sessIDCookieName = "sessid"
 	}
-	if o.CookieMaxAge == 0 {
-		m.cookieMaxAgeSec = 30 * 24 * 60 * 60 // 30 days max age
-	} else {
+	if o.CookieMaxAge != 0 {
 		m.cookieMaxAgeSec = int(o.CookieMaxAge.Seconds())
 	}
 	if m.cookiePath == "" {
