@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/go-redis/cache"
 	"github.com/go-redis/redis"
@@ -78,6 +79,13 @@ func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
 	return s
 }
 
+type sessionImpl struct {
+	IDF      string                 // ID of the session
+	CreatedF time.Time              // Creation time
+	CAttrsF  map[string]interface{} // Constant attributes specified at session creation
+	AttrsF   map[string]interface{} // Attributes stored in the session
+}
+
 // Load is to implement Store.Load().
 func (s *redicacheStore) Load(id string) session.Session {
 	s.mux.RLock()
@@ -91,11 +99,11 @@ func (s *redicacheStore) Load(id string) session.Session {
 
 	// Next check in Memcache
 	var err error
-	var sess *session.SessionImpl
+	var sess *sessionImpl
 
 	key := s.keyPrefix + id
 	for i := 0; i < s.retries; i++ {
-		var sess_ session.SessionImpl
+		var sess_ sessionImpl
 		err = s.codec.Get(key, &sess_)
 		if err == cache.ErrCacheMiss {
 			break // It's not in the cache
@@ -112,9 +120,15 @@ func (s *redicacheStore) Load(id string) session.Session {
 		return nil
 	}
 
-	sess.Access()
-	s.sessions[id] = sess
-	return sess
+	ss := session.NewSessionOptions(&session.SessOptions{
+		IDF:      sess.IDF,
+		CreatedF: sess.CreatedF,
+		CAttrs:   sess.CAttrsF,
+		Attrs:    sess.AttrsF,
+	})
+	ss.Access()
+	s.sessions[id] = ss
+	return ss
 }
 
 // Save is to implement Store.Save().

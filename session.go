@@ -73,7 +73,7 @@ type Session interface {
 
 // Session implementation.
 // Fields are exported so a session may be marshalled / unmarshalled.
-type SessionImpl struct {
+type sessionImpl struct {
 	IDF       string                 // ID of the session
 	CreatedF  time.Time              // Creation time
 	AccessedF time.Time              // Last accessed time
@@ -87,6 +87,10 @@ type SessionImpl struct {
 // SessOptions defines options that may be passed when creating a new Session.
 // All fields are optional; default value will be used for any field that has the zero value.
 type SessOptions struct {
+	// ID of the session
+	IDF string
+	// Creation time
+	CreatedF time.Time
 	// Constant attributes of the session. These be will available via the Session.CAttr() method, without synchronization.
 	// Values from the map will be copied, and will be available via Session.CAttr().
 	CAttrs map[string]interface{}
@@ -126,9 +130,21 @@ func NewSessionOptions(o *SessOptions) Session {
 		timeout = 30 * time.Minute
 	}
 
-	sess := SessionImpl{
-		IDF:       genID(idLength),
-		CreatedF:  now,
+	var id string
+	if o.IDF != "" {
+		id = o.IDF
+	} else {
+		id = genID(idLength)
+	}
+	var created time.Time
+	if !o.CreatedF.IsZero() {
+		created = now
+	} else {
+		created = o.CreatedF
+	}
+	sess := sessionImpl{
+		IDF:       id,
+		CreatedF:  created,
 		AccessedF: now,
 		AttrsF:    make(map[string]interface{}),
 		TimeoutF:  timeout,
@@ -157,27 +173,27 @@ func genID(length int) string {
 }
 
 // ID is to implement Session.ID().
-func (s *SessionImpl) ID() string {
+func (s *sessionImpl) ID() string {
 	return s.IDF
 }
 
 // New is to implement Session.New().
-func (s *SessionImpl) New() bool {
+func (s *sessionImpl) New() bool {
 	return s.CreatedF == s.AccessedF
 }
 
 // Changed is to implement Session.Changed().
-func (s *SessionImpl) Changed() bool {
+func (s *sessionImpl) Changed() bool {
 	return s.changedF
 }
 
 // Getp is to implement Session.Getp().
-func (s *SessionImpl) Getp(name string) interface{} {
+func (s *sessionImpl) Getp(name string) interface{} {
 	return s.CAttrsF[name]
 }
 
 // Get is to implement Session.Get().
-func (s *SessionImpl) Get(name string) interface{} {
+func (s *sessionImpl) Get(name string) interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -185,7 +201,7 @@ func (s *SessionImpl) Get(name string) interface{} {
 }
 
 // Set is to implement Session.Set().
-func (s *SessionImpl) Set(name string, value interface{}) {
+func (s *sessionImpl) Set(name string, value interface{}) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -198,7 +214,7 @@ func (s *SessionImpl) Set(name string, value interface{}) {
 }
 
 // Values is to implement Session.Values().
-func (s *SessionImpl) Values() map[string]interface{} {
+func (s *sessionImpl) Values() map[string]interface{} {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -210,12 +226,12 @@ func (s *SessionImpl) Values() map[string]interface{} {
 }
 
 // Created is to implement Session.Created().
-func (s *SessionImpl) Created() time.Time {
+func (s *sessionImpl) Created() time.Time {
 	return s.CreatedF
 }
 
 // Accessed is to implement Session.Accessed().
-func (s *SessionImpl) Accessed() time.Time {
+func (s *sessionImpl) Accessed() time.Time {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -223,17 +239,17 @@ func (s *SessionImpl) Accessed() time.Time {
 }
 
 // Timeout is to implement Session.Timeout().
-func (s *SessionImpl) Timeout() time.Duration {
+func (s *sessionImpl) Timeout() time.Duration {
 	return s.TimeoutF
 }
 
 // Mutex is to implement Session.Mutex().
-func (s *SessionImpl) Mutex() *sync.RWMutex {
+func (s *sessionImpl) Mutex() *sync.RWMutex {
 	return s.mux
 }
 
 // Access is to implement Session.Access().
-func (s *SessionImpl) Access() {
+func (s *sessionImpl) Access() {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
