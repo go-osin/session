@@ -24,7 +24,7 @@ Usage
 
 Usage can't be simpler than this. To get the current session associated with the http.Request:
 
-    sess := session.Get(r)
+    sess := session.Load(r)
     if sess == nil {
         // No session (yet)
     } else {
@@ -34,7 +34,7 @@ Usage can't be simpler than this. To get the current session associated with the
 To create a new session (e.g. on a successful login) and add it to an http.ResponseWriter (to let the client know about the session):
 
     sess := session.NewSession()
-    session.Add(sess, w)
+    session.Save(sess, w)
 
 Let's see a more advanced session creation: let's provide a constant attribute (for the lifetime of the session) and an initial, variable attribute:
 
@@ -45,11 +45,11 @@ Let's see a more advanced session creation: let's provide a constant attribute (
 
 And to access these attributes and change value of "Count":
 
-    userName := sess.CAttr("UserName")
-    count := sess.Attr("Count").(int) // Type assertion, you might wanna check if it succeeds
-    sess.SetAttr("Count", count+1)    // Increment count
+    userName := sess.Getp("UserName")
+    count := sess.Get("Count").(int) // Type assertion, you might wanna check if it succeeds
+    sess.Set("Count", count+1)    // Increment count
 
-(Of course variable attributes can be added later on too with Session.SetAttr(), not just at session creation.)
+(Of course variable attributes can be added later on too with Session.Set(), not just at session creation.)
 
 To remove a session (e.g. on logout):
 
@@ -90,11 +90,11 @@ to do session-related tasks, something like this:
     sess := sessmgr.Get(r) // Get current session
     if sess != nil {
         // Session exists, do something with it.
-        ctx.Infof("Count: %v", sess.Attr("Count"))
+        ctx.Infof("Count: %v", sess.Get("Count"))
     } else {
         // No session yet, let's create one and add it:
         sess = session.NewSession()
-        sess.SetAttr("Count", 1)
+        sess.Set("Count", 1)
         sessmgr.Add(sess, w)
     }
 
