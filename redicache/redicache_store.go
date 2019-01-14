@@ -10,7 +10,10 @@ import (
 	"github.com/go-redis/redis"
 
 	"github.com/go-osin/session"
+	"github.com/go-osin/session/codec"
 )
+
+var JSON = codec.JSON
 
 type redicacheStore struct {
 	keyPrefix string // Prefix to use in front of session ids to construct Redis key
@@ -29,7 +32,7 @@ type RedicacheStoreOptions struct {
 	Password  string
 	KeyPrefix string
 	Retries   int
-	Codec     *Codec
+	Codec     *codec.Codec
 }
 
 var zeroRedicacheStoreOptions = new(RedicacheStoreOptions)
@@ -54,9 +57,9 @@ func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
 		DB:       o.DB,
 		Password: o.Password,
 	})
-	var cd Codec
+	var cd codec.Codec
 	if o.Codec == nil {
-		cd = Gob
+		cd = codec.Gob
 	} else {
 		cd = *o.Codec
 	}

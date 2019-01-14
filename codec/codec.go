@@ -1,4 +1,4 @@
-package redicache
+package codec
 
 import (
 	"bytes"
