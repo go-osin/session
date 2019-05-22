@@ -13,6 +13,7 @@ var (
 	JSON = Codec{json.Marshal, json.Unmarshal}
 )
 
+// Codec a codec
 type Codec struct {
 	Marshal   func(interface{}) ([]byte, error)
 	Unmarshal func([]byte, interface{}) error

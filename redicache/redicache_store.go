@@ -14,6 +14,7 @@ import (
 )
 
 var JSON = codec.JSON
+var MsgPack = codec.MsgPack
 
 type redicacheStore struct {
 	keyPrefix string // Prefix to use in front of session ids to construct Redis key
@@ -140,7 +141,7 @@ func (s *redicacheStore) Save(sess session.Session) {
 	defer s.mux.Unlock()
 
 	if s.setCacheSession(sess) {
-		log.Printf("Session redic added: %s", sess.ID())
+		log.Printf("Session redic saved: %s", sess.ID())
 		s.sessions[sess.ID()] = sess
 		return
 	}

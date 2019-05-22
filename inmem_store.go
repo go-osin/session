@@ -116,6 +116,7 @@ func (s *inMemStore) Load(id string) Session {
 	if sess == nil {
 		return nil
 	}
+	log.Print("Session inmem loaded:", sess.ID())
 
 	sess.Access()
 	return sess
@@ -126,7 +127,7 @@ func (s *inMemStore) Save(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	log.Println("Session inmem added:", sess.ID())
+	log.Print("Session inmem saved:", sess.ID())
 	s.sessions[sess.ID()] = sess
 }
 
@@ -135,7 +136,7 @@ func (s *inMemStore) Remove(sess Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	log.Println("Session inmem removed:", sess.ID())
+	log.Print("Session inmem removed:", sess.ID())
 	delete(s.sessions, sess.ID())
 }
 
