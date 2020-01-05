@@ -15,7 +15,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/icza/session"
+	"github.com/go-osin/session"
+	"github.com/go-osin/session/gaestore"
 	"google.golang.org/appengine"
 )
 
@@ -33,7 +34,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	// Create session manager:
 	// For testing purposes, we want cookies to be sent over HTTP too (not just HTTPS):
-	sessmgr := session.NewCookieManagerOptions(session.NewMemcacheStore(ctx), &session.CookieMngrOptions{AllowHTTP: true})
+	sessmgr := session.NewCookieManagerOptions(gaestore.NewMemcacheStore(ctx), &session.CookieMngrOptions{AllowHTTP: true})
 	defer sessmgr.Close() // Note the Close(): it will ensure changes made to the session are auto-saved in Memcache.
 
 	m := map[string]interface{}{}

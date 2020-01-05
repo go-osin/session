@@ -13,8 +13,8 @@ import (
 	"github.com/go-osin/session/codec"
 )
 
+// JSON ...
 var JSON = codec.JSON
-var MsgPack = codec.MsgPack
 
 type redicacheStore struct {
 	keyPrefix string // Prefix to use in front of session ids to construct Redis key

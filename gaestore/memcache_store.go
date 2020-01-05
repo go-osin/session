@@ -26,7 +26,7 @@ https://github.com/icza/session/blob/master/gae_session_demo/session_demo.go
 
 */
 
-package session
+package gaestore
 
 import (
 	"net/http"
