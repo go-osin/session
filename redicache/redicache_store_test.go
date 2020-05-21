@@ -12,7 +12,7 @@ import (
 func TestRedicacheStore(t *testing.T) {
 	eq, neq := mighty.EqNeq(t)
 
-	st := NewRedicacheStore()
+	st := NewStore()
 	defer st.Close()
 
 	eq(nil, st.Load("asdf"))

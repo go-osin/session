@@ -13,10 +13,7 @@ import (
 	"github.com/go-osin/session/codec"
 )
 
-// JSON ...
-var JSON = codec.JSON
-
-type redicacheStore struct {
+type storeImpl struct {
 	keyPrefix string // Prefix to use in front of session ids to construct Redis key
 	retries   int    // Number of retries to perform in case of general Redis failures
 
@@ -27,7 +24,8 @@ type redicacheStore struct {
 	mux *sync.RWMutex // mutex to synchronize access to sessions
 }
 
-type RedicacheStoreOptions struct {
+// StoreOptions ...
+type StoreOptions struct {
 	Addrs     []string
 	DB        int
 	Password  string
@@ -36,13 +34,15 @@ type RedicacheStoreOptions struct {
 	Codec     *codec.Codec
 }
 
-var zeroRedicacheStoreOptions = new(RedicacheStoreOptions)
+var zeroStoreOptions = new(StoreOptions)
 
-func NewRedicacheStore() session.Store {
-	return NewRedicacheStoreOptions(zeroRedicacheStoreOptions)
+// NewStore ...
+func NewStore() session.Store {
+	return NewStoreOptions(zeroStoreOptions)
 }
 
-func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
+// NewStoreOptions ...
+func NewStoreOptions(o *StoreOptions) session.Store {
 	if len(o.Addrs) == 0 {
 		o.Addrs = []string{":6379"}
 	} else {
@@ -69,7 +69,7 @@ func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
 		Marshal:   cd.Marshal,
 		Unmarshal: cd.Unmarshal,
 	}
-	s := &redicacheStore{
+	s := &storeImpl{
 		keyPrefix: o.KeyPrefix,
 		retries:   o.Retries,
 		sessions:  make(map[string]session.Session, 2),
@@ -84,14 +84,14 @@ func NewRedicacheStoreOptions(o *RedicacheStoreOptions) session.Store {
 }
 
 type sessionImpl struct {
-	IDF      string                 // ID of the session
-	CreatedF time.Time              // Creation time
-	CAttrsF  map[string]interface{} // Constant attributes specified at session creation
-	AttrsF   map[string]interface{} // Attributes stored in the session
+	IDF      string                 `json:"id"`      // ID of the session
+	CreatedF time.Time              `json:"created"` // Creation time
+	CAttrsF  map[string]interface{} `json:"cattrs"`  // Constant attributes specified at session creation
+	AttrsF   map[string]interface{} `json:"attrs"`   // Attributes stored in the session
 }
 
 // Load is to implement Store.Load().
-func (s *redicacheStore) Load(id string) session.Session {
+func (s *storeImpl) Load(id string) session.Session {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
@@ -136,7 +136,7 @@ func (s *redicacheStore) Load(id string) session.Session {
 }
 
 // Save is to implement Store.Save().
-func (s *redicacheStore) Save(sess session.Session) {
+func (s *storeImpl) Save(sess session.Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -148,7 +148,7 @@ func (s *redicacheStore) Save(sess session.Session) {
 }
 
 // setCacheSession sets the specified session in the Memcache.
-func (s *redicacheStore) setCacheSession(sess session.Session) (success bool) {
+func (s *storeImpl) setCacheSession(sess session.Session) (success bool) {
 	item := &cache.Item{
 		Key:        s.keyPrefix + sess.ID(),
 		Object:     sess,
@@ -167,7 +167,7 @@ func (s *redicacheStore) setCacheSession(sess session.Session) (success bool) {
 }
 
 // Remove is to implement Store.Remove().
-func (s *redicacheStore) Remove(sess session.Session) {
+func (s *storeImpl) Remove(sess session.Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
@@ -183,7 +183,7 @@ func (s *redicacheStore) Remove(sess session.Session) {
 }
 
 // Close is to implement Store.Close().
-func (s *redicacheStore) Close() {
+func (s *storeImpl) Close() {
 	// Flush out sessions that were accessed from this store. No need locking, we're closing...
 	// We could use Codec.SetMulti(), but sessions will contain at most 1 session like all the times.
 	for _, sess := range s.sessions {
