@@ -74,12 +74,12 @@ type Session interface {
 // Session implementation.
 // Fields are exported so a session may be marshalled / unmarshalled.
 type sessionImpl struct {
-	IDF       string                 // ID of the session
-	CreatedF  time.Time              // Creation time
-	AccessedF time.Time              // Last accessed time
-	CAttrsF   map[string]interface{} // Constant attributes specified at session creation
-	AttrsF    map[string]interface{} // Attributes stored in the session
-	TimeoutF  time.Duration          // Session timeout
+	IDF       string                 `json:"id"`       // ID of the session
+	CreatedF  time.Time              `json:"created"`  // Creation time
+	AccessedF time.Time              `json:"accessed"` // Last accessed time
+	CAttrsF   map[string]interface{} `json:"cattrs"`   // Constant attributes specified at session creation
+	AttrsF    map[string]interface{} `json:"attrs"`    // Attributes stored in the session
+	TimeoutF  time.Duration          `json:"timeout"`  // Session timeout
 	mux       *sync.RWMutex          // RW mutex to synchronize session state access
 	changedF  bool
 }
