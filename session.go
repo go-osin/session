@@ -138,9 +138,9 @@ func NewSessionOptions(o *SessOptions) Session {
 	}
 	var created time.Time
 	if !o.CreatedF.IsZero() {
-		created = now
-	} else {
 		created = o.CreatedF
+	} else {
+		created = now
 	}
 	sess := sessionImpl{
 		IDF:       id,
