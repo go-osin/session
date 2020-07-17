@@ -60,7 +60,7 @@ func NewStoreOptions(o *StoreOptions) session.Store {
 	})
 	var cd codec.Codec
 	if o.Codec == nil {
-		cd = codec.Gob
+		cd = codec.JSON
 	} else {
 		cd = *o.Codec
 	}
@@ -136,7 +136,7 @@ func (s *storeImpl) Save(sess session.Session) {
 	defer s.mux.Unlock()
 
 	if s.storeSession(sess) {
-		log.Printf("Session redic saved: %s", sess.ID())
+		log.Printf("Session save to redic: %s", sess.ID())
 		s.sessions[sess.ID()] = sess
 		return
 	}
@@ -157,7 +157,7 @@ func (s *storeImpl) storeSession(sess session.Session) (success bool) {
 		}
 	}
 
-	log.Printf("Failed to add session to cache, id: %s, error: %v", sess.ID(), err)
+	log.Printf("Failed to store session to cache, id: %s, error: %v", sess.ID(), err)
 	return false
 }
 
