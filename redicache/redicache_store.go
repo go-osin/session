@@ -95,32 +95,26 @@ func (s *storeImpl) Load(id string) session.Session {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
-	// First check our "cache"
-	if sess, ok := s.sessions[id]; ok {
-		sess.Access()
-		return sess
-	}
-
 	// Next check in Memcache
 	var err error
 	var sess *sessionImpl
 
 	key := s.keyPrefix + id
 	for i := 0; i < s.retries; i++ {
-		var sess_ sessionImpl
-		err = s.codec.Get(key, &sess_)
+		var _sess sessionImpl
+		err = s.codec.Get(key, &_sess)
 		if err == cache.ErrCacheMiss {
 			break // It's not in the cache
 		}
 		if err == nil {
-			sess = &sess_
+			sess = &_sess
 			break
 		}
 		// Service error? Retry..
 	}
 
 	if sess == nil {
-		log.Printf("Failed to get session from redicache, id: %s, error: %v", id, err)
+		log.Printf("Failed to load session from redicache, id: %s, error: %v", id, err)
 		return nil
 	}
 
@@ -132,6 +126,7 @@ func (s *storeImpl) Load(id string) session.Session {
 	})
 	ss.Access()
 	s.sessions[id] = ss
+	log.Printf("session load from redic, id: %s, len %d", sess.IDF, len(sess.AttrsF))
 	return ss
 }
 
@@ -140,15 +135,15 @@ func (s *storeImpl) Save(sess session.Session) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	if s.setCacheSession(sess) {
+	if s.storeSession(sess) {
 		log.Printf("Session redic saved: %s", sess.ID())
 		s.sessions[sess.ID()] = sess
 		return
 	}
 }
 
-// setCacheSession sets the specified session in the Memcache.
-func (s *storeImpl) setCacheSession(sess session.Session) (success bool) {
+// storeSession sets the specified session in the Memcache.
+func (s *storeImpl) storeSession(sess session.Session) (success bool) {
 	item := &cache.Item{
 		Key:        s.keyPrefix + sess.ID(),
 		Object:     sess,
@@ -187,6 +182,6 @@ func (s *storeImpl) Close() {
 	// Flush out sessions that were accessed from this store. No need locking, we're closing...
 	// We could use Codec.SetMulti(), but sessions will contain at most 1 session like all the times.
 	for _, sess := range s.sessions {
-		s.setCacheSession(sess)
+		s.storeSession(sess)
 	}
 }

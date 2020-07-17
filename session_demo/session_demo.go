@@ -8,10 +8,11 @@ Code demonstrates session access, creation and removal.
 package main
 
 import (
-	"github.com/icza/session"
 	"html/template"
 	"log"
 	"net/http"
+
+	"github.com/go-osin/session"
 )
 
 var templ = template.Must(template.New("").Parse(page))
@@ -21,14 +22,14 @@ var templ = template.Must(template.New("").Parse(page))
 func myHandler(w http.ResponseWriter, r *http.Request) {
 	m := map[string]interface{}{}
 
-	sess := session.Get(r)
+	sess := session.Load(r)
 	if sess != nil {
 		// Already logged in
 		if r.FormValue("Logout") != "" {
 			session.Remove(sess, w) // Logout user
 			sess = nil
 		} else {
-			sess.SetAttr("Count", sess.Attr("Count").(int)+1)
+			sess.Set("Count", sess.Get("Count").(int)+1)
 		}
 	} else {
 		// Not logged in
@@ -39,7 +40,7 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 					CAttrs: map[string]interface{}{"UserName": userName},
 					Attrs:  map[string]interface{}{"Count": 1},
 				})
-				session.Add(sess, w)
+				session.Save(sess, w)
 			} else {
 				m["InvalidLogin"] = true
 			}
@@ -47,8 +48,8 @@ func myHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if sess != nil {
-		m["UserName"] = sess.CAttr("UserName")
-		m["Count"] = sess.Attr("Count")
+		m["UserName"] = sess.Getp("UserName")
+		m["Count"] = sess.Get("Count")
 	}
 
 	if err := templ.Execute(w, m); err != nil {
