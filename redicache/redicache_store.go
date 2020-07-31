@@ -60,7 +60,7 @@ func NewStoreOptions(o *StoreOptions) session.Store {
 	})
 	var cd codec.Codec
 	if o.Codec == nil {
-		cd = codec.JSON
+		cd = codec.Gob
 	} else {
 		cd = *o.Codec
 	}
@@ -126,7 +126,7 @@ func (s *storeImpl) Load(id string) session.Session {
 	})
 	ss.Access()
 	s.sessions[id] = ss
-	log.Printf("session load from redic, id: %s, len %d", sess.IDF, len(sess.AttrsF))
+	log.Printf("session load from redic, id: %s, vals %v", sess.IDF, sess.AttrsF)
 	return ss
 }
 
