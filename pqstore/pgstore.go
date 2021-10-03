@@ -175,11 +175,11 @@ func (s *storeImpl) Close() {
 func (s *storeImpl) createSessionsTable() error {
 	stmt := `
 		CREATE TABLE IF NOT EXISTS http_sessions (
-		key TEXT,
-		data BYTEA,
+		key TEXT NOT NULL,
+		data BYTEA NOT NULL,
 		created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		modified TIMESTAMPTZ,
-		expires_at TIMESTAMPTZ,
+		expires_on TIMESTAMPTZ NOT NULL,
 		PRIMARY KEY (key));
 		`
 
@@ -193,14 +193,14 @@ func (s *storeImpl) createSessionsTable() error {
 }
 
 func (s *storeImpl) dbGet(id string) (se *sessionEntry, err error) {
-	stmt := "SELECT data, created, modified, expires_at FROM http_sessions WHERE key = $1"
+	stmt := "SELECT data, created, modified, expires_on FROM http_sessions WHERE key = $1"
 	se = &sessionEntry{Key: id}
 	err = s.db.QueryRow(stmt, id).Scan(&se.Data, &se.Created, &se.Modified, &se.ExpiresAt)
 	return
 }
 
 func (s *storeImpl) dbStore(se *sessionEntry) error {
-	stmt := `INSERT INTO http_sessions(key, data, expires_at) VALUES($1, $2, $3)
+	stmt := `INSERT INTO http_sessions(key, data, expires_on) VALUES($1, $2, $3)
 	ON CONFLICT (key) DO UPDATE SET data = $4, modified = now() `
 	_, err := s.db.Exec(stmt, se.Key, se.Data, se.ExpiresAt, se.Data)
 	return err
