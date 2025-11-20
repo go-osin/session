@@ -86,7 +86,7 @@ func (s *storeImpl) Load(id string) session.Session {
 
 	se, err := s.dbGet(id)
 	if err != nil {
-		log.Printf("failed to get from db: %s", err)
+		log.Printf("failed to get '%s' from db: %s", id, err)
 		return nil
 	}
 
